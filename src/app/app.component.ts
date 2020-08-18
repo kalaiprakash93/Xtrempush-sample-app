@@ -2,8 +2,10 @@ import { Component } from '@angular/core';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { Platform } from '@ionic/angular';
+import {Plugins,PushNotificationToken} from '@capacitor/core';
 
 declare var XtremePush: any;
+const { PushNotifications } = Plugins;
 
 @Component({
   selector: 'app-root',
@@ -11,7 +13,6 @@ declare var XtremePush: any;
   styleUrls: ['app.component.scss']
 })
 export class AppComponent {
-  deviceData:any;
   constructor(
     private platform: Platform,
     private splashScreen: SplashScreen,
@@ -24,20 +25,27 @@ export class AppComponent {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+	  this.xtremePushRegistration();
     });
   }
   /******************** Register Xtrempush**************************/
   xtremePushRegistration() {
+	  PushNotifications.addListener('registration',
+        // tslint:disable-next-line: no-shadowed-variable
+        (token: PushNotificationToken) => {
+          XtremePush.registerWithToken(token);
+        }
+      );
     const gcmProjectNumber = 'dummy';
     XtremePush.register({
-        appKey: 'dummy',
+        appKey: 'token',
 		debugLogsEnabled: true,
 		inappMessagingEnabled: true,
-        deeplinkCallback: 'onDeeplinkReceived',
         ios: {
-          pushPermissionsRequest: true,
+          pushPermissionsRequest: false,
           locationsEnabled: true,
-          locationsPermissionsRequest: true
+          locationsPermissionsRequest: true,
+		  sandboxMode: true
         },
         android: {
           gcmProjectNumber,
@@ -46,16 +54,7 @@ export class AppComponent {
         }
       });
     }
-
-
-onDeeplinkReceived(data) {
-  alert('Deeplink Received ' + JSON.stringify(data));
-}
-
-deviceInfo() {
-  XtremePush.deviceInfo((data) => {
-    alert('Device Info' + JSON.stringify(data));
-    this.deviceData = data;
-  });
-}
+	xtremePushPermission(){
+		XtremePush.pushPermissionsRequest();
+	}
 }
