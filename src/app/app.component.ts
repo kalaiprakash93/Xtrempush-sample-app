@@ -55,6 +55,6 @@ export class AppComponent {
       });
     }
 	xtremePushPermission(){
-		XtremePush.pushPermissionsRequest();
+		 XtremePush.requestPushPermissions();
 	}
 }
